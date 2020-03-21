@@ -31,6 +31,9 @@ function fnCall([sym, ...args], vars) {
     return
   case 'fn':
     return evalFn(args, vars)
+  case 'defn':
+    const [name, ...fnPart] = args
+    vars[name.name] = evalFn(fnPart, vars)
   case 'if':
     if(isTrue(evalEdn(args[0], vars))) {
       return evalEdn(args[1], vars)
@@ -46,8 +49,13 @@ function fnCall([sym, ...args], vars) {
   }
 }
 
-const evalSymbol = (symbolName, vars) =>
-  vars[symbolName]
+const evalSymbol = (symbolName, vars) => {
+  const val = vars[symbolName]
+  if(val === undefined) {
+    throw new Error(`Var ${symbolName} is not defined`)
+  }
+  return val
+}
 
 function evalEdn(parsed, vars) {
   if(parsed instanceof edn.List) {

@@ -34,4 +34,10 @@ describe('evaluation of MiniClj', () => {
       evaluate('((fn [a] a) 20)')
     ).toBe(20)
   })
+
+  test('defn special form', () => {
+    expect(
+      evaluate('(defn afn [a] a) (afn 10)')
+    ).toBe(10)
+  })
 })
