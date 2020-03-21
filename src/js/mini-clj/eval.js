@@ -12,8 +12,25 @@ function evalLet([bindings, ...body], vars) {
   return evalEdn(body, newVars)
 }
 
+function evalFn([argSymbols, ...body], vars) {
+  const params = argSymbols.val;
+  const newVars = Object.create(vars)
+
+  return (args) => {
+    for(let i = 0; i < params.length; i++) {
+      newVars[params[i].name] = args[i]
+    }
+    return evalEdn(body, newVars)
+  }
+}
+
 function fnCall([sym, ...args], vars) {
   switch(sym.ednEncode()) {
+  case 'def':
+    vars[args[0].name] = evalEdn(args[1], vars)
+    return
+  case 'fn':
+    return evalFn(args, vars)
   case 'if':
     if(isTrue(evalEdn(args[0], vars))) {
       return evalEdn(args[1], vars)
@@ -22,6 +39,10 @@ function fnCall([sym, ...args], vars) {
     }
   case 'let':
     return evalLet(args, vars)
+  default:
+    const fn = evalEdn(sym, vars)
+    const params = args.map(p => evalEdn(p, vars))
+    return fn(params)
   }
 }
 
@@ -44,8 +65,8 @@ function evalEdn(parsed, vars) {
 }
 
 function evaluate(string) {
-  const parsed = edn.parse(string)
-  return evalEdn(parsed, {})
+  const parsed = edn.parse(`[${string}\n]`)
+  return evalEdn(parsed.val, {})
 }
 
 module.exports = {evaluate}
