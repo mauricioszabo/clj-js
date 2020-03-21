@@ -2,5 +2,8 @@
   "name": "clj-in-js",
   "devDependencies": {
     "jest": "^25.1.0"
+  },
+  "dependencies": {
+    "jsedn": "^0.4.1"
   }
 }
