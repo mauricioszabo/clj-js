@@ -11,6 +11,9 @@ const env = {
   },
   '*': ([...vals]) => vals.reduce((a, b) => a * b, 1),
   '/': ([...vals]) => vals.reduce((a, b) => a / b, 1),
+  '=': ([a, b]) => a === b,
+  'not=': ([a, b]) => a !== b,
+  'not': ([val]) => !val,
   or: ([...vals]) => vals.reduce((a, b) => a || b, null),
   and: ([...vals]) => {
     if(vals.length == 1) {

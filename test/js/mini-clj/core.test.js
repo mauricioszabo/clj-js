@@ -19,5 +19,9 @@ describe('MiniClj interpreter', () => {
   test('booleans', () => {
     expect(evaluate('(or false 20)')).toBe(20)
     expect(evaluate('(and false 20)')).toBe(false)
+
+    expect(evaluate('(= 20 20)')).toBe(true)
+    expect(evaluate('(not (= 20 20))')).toBe(false)
+    expect(evaluate('(not= 20 20)')).toBe(false)
   })
 })
