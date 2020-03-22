@@ -1,4 +1,4 @@
-const {evaluate} = require('../../../src/js/mini-clj/eval')
+const {evaluate, load} = require('../../../src/js/mini-clj/eval')
 const edn = require('jsedn')
 
 describe('evaluation of MiniClj', () => {
@@ -39,5 +39,10 @@ describe('evaluation of MiniClj', () => {
     expect(
       evaluate('(defn afn [a] a) (afn 10)')
     ).toBe(10)
+  })
+
+  test('load source and return an env', () => {
+    const env = load("(defn second [a b] b)")
+    expect(evaluate("(second 1 2)", env)).toBe(2)
   })
 })

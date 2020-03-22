@@ -72,9 +72,15 @@ function evalEdn(parsed, vars) {
   }
 }
 
-function evaluate(string) {
+function evaluate(string, env={}) {
   const parsed = edn.parse(`[${string}\n]`)
-  return evalEdn(parsed.val, {})
+  return evalEdn(parsed.val, env)
 }
 
-module.exports = {evaluate}
+function load(string, env={}) {
+  const newEnv = Object.create(env)
+  evaluate(string, newEnv)
+  return newEnv
+}
+
+module.exports = {evaluate, load}
