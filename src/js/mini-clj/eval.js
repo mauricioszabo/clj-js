@@ -5,7 +5,7 @@ const isTrue = edn => !(edn === false || edn === null)
 function evalLet([bindings, ...body], vars) {
   const newVars = Object.create(vars)
   const binds = bindings.val
-  for(let i = 0; i < binds.length / 2; i += 2) {
+  for(let i = 0; i < binds.length; i += 2) {
     const res = evalEdn(binds[i+1], newVars)
     newVars[binds[i].name] = res
   }
@@ -34,6 +34,7 @@ function fnCall([sym, ...args], vars) {
   case 'defn':
     const [name, ...fnPart] = args
     vars[name.name] = evalFn(fnPart, vars)
+    return
   case 'if':
     if(isTrue(evalEdn(args[0], vars))) {
       return evalEdn(args[1], vars)
@@ -44,15 +45,19 @@ function fnCall([sym, ...args], vars) {
     return evalLet(args, vars)
   default:
     const fn = evalEdn(sym, vars)
-    const params = args.map(p => evalEdn(p, vars))
-    return fn(params)
+    if(fn.macro) {
+      return fn(args, vars)
+    } else {
+      const params = args.map(p => evalEdn(p, vars))
+      return fn(params)
+    }
   }
 }
 
 const evalSymbol = (symbolName, vars) => {
   const val = vars[symbolName]
   if(val === undefined) {
-    throw new Error(`Var ${symbolName} is not defined`)
+    throw new Error(`Var "${symbolName}" is not defined`)
   }
   return val
 }
@@ -60,6 +65,12 @@ const evalSymbol = (symbolName, vars) => {
 function evalEdn(parsed, vars) {
   if(parsed instanceof edn.List) {
     return fnCall(parsed.val, vars)
+  } else if(parsed instanceof edn.Vector) {
+    return new edn.Vector(parsed.val.map(e => evalEdn(e, vars)))
+  } else if(parsed instanceof edn.Map) {
+    parsed.keys = parsed.keys.map(e => evalEdn(e, vars))
+    parsed.vals = parsed.vals.map(e => evalEdn(e, vars))
+    return parsed
   } else if(parsed instanceof edn.Keyword) {
     return parsed
   } else if(parsed instanceof edn.Symbol) {
@@ -83,4 +94,4 @@ function load(string, env={}) {
   return newEnv
 }
 
-module.exports = {evaluate, load}
+module.exports = {evaluate, load, evalEdn}
